@@ -1,8 +1,8 @@
 {
   "name": "JWT-NestJS",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Conception d'une authentification avec le framework NestJS en utilisant les tokens JWT",
+  "author": "Alain Guillon",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

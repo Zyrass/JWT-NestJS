@@ -18,7 +18,7 @@ import { AppService } from './app.service';
         },
         uri: `mongodb+srv://${configService.get(
           'MONGODB_CLUSTER_NAME',
-        )}.xdeetkl.mongodb.net/${configService.get('MONGODB_COLLECTION_NAME')}`,
+        )}.xdeetkl.mongodb.net/${configService.get('MONGODB_DATABASE_NAME')}`,
       }),
       inject: [ConfigService],
     }),

@@ -1,0 +1,29 @@
+# .github/release.yml
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - Alain Guillon (Zyrass)
+  categories:
+    - title: Breaking Changes 🛠
+      labels:
+        - Semver-Major
+        - breaking-change
+    - title: Exciting New Features 🎉
+      labels:
+        - Semver-Minor
+        - enhancement
+    - title: Other Changes
+      labels:
+        - "*"
+    - title: Features 🏕
+      labels:
+        - '*'
+      exclude:
+        labels:
+          - dependencies
+    - title: Dependencies 👒
+      labels:
+        - dependencies

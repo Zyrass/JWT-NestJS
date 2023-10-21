@@ -3,6 +3,7 @@
 /node_modules
 
 # security
+.env
 .env.local
 
 # Logs

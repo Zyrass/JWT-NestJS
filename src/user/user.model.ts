@@ -45,7 +45,7 @@ export class User {
   country?: string;
 
   @Prop({
-    default: 'Lyon'.charAt(0).toUpperCase(),
+    default: 'Lyon',
   })
   city?: string;
 }

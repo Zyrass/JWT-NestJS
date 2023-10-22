@@ -1,14 +1,37 @@
+import { InjectModel } from '@nestjs/mongoose';
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import { pbkdf2Sync } from 'node:crypto';
+import { User, UserDocument } from 'src/user/user.model';
+import { EUserRole } from 'src/user/user.interface';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectModel('user') private readonly userModel: Model<UserDocument>,
     private readonly userService: UserService,
     private jwtService: JwtService,
   ) {}
+
+  async createUser(
+    email: string,
+    password: string,
+    salt: string,
+    firstname: string,
+    lastname: string,
+    role: EUserRole,
+  ): Promise<User> {
+    return this.userModel.create({
+      email,
+      password,
+      salt,
+      firstname,
+      lastname,
+      role,
+    });
+  }
 
   async validateUserLogin(email: string, password: string): Promise<any> {
     const user = await this.userService.fetchUserByEmail(email);

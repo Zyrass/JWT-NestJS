@@ -4,7 +4,6 @@ import {
   Get,
   HttpStatus,
   Param,
-  Post,
   Res,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -12,9 +11,6 @@ import { UserService } from './user.service';
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Post()
-  async createUser() {}
 
   @Get()
   async getUsers() {

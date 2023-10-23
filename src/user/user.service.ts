@@ -9,6 +9,10 @@ export class UserService {
     @InjectModel('user') private readonly userModel: Model<UserDocument>,
   ) {}
 
+  async fetchUser(query: object) {
+    return this.userModel.findOne(query);
+  }
+
   async fetchAllUsers() {
     return this.userModel.find();
   }
@@ -23,5 +27,9 @@ export class UserService {
 
   async fetchDataForPayload(email: string) {
     return this.userModel.findOne({ email: email }).select('_id');
+  }
+
+  async fetchUserBydIdForDeleted(id: string) {
+    return this.userModel.findByIdAndRemove(id);
   }
 }

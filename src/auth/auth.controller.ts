@@ -1,8 +1,9 @@
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
-import { createHash, pbkdf2Sync, randomBytes } from 'crypto';
+import { pbkdf2Sync, randomBytes } from 'crypto';
 import { Model } from 'mongoose';
 import { UserDocument } from 'src/user/user.model';
 
@@ -11,6 +12,7 @@ export class AuthController {
   constructor(
     private readonly autheService: AuthService,
     private readonly userService: UserService,
+    private readonly configService: ConfigService,
     @InjectModel('user') private readonly userModel: Model<UserDocument>,
   ) {}
 
@@ -59,18 +61,20 @@ export class AuthController {
     }
 
     const createdSalt = randomBytes(16).toString('hex');
-
-    const hashedUserPassword = createHash('sha512', password)
-      .update(password + createdSalt)
-      .digest('hex');
-    console.log(hashedUserPassword);
+    const hashedUserPassword = pbkdf2Sync(
+      password,
+      createdSalt,
+      1000,
+      64,
+      'sha512',
+    ).toString('hex');
 
     const createdUser = new this.userModel({
       email: email,
       password: hashedUserPassword,
       salt: createdSalt,
     });
-    console.log(createdUser);
+    // console.log(createdUser);
 
     if (createdUser) {
       createdUser.save();
@@ -116,7 +120,7 @@ export class AuthController {
     }
 
     // Contrôle de l'existance de l'utilisateur selon l'email saisit
-    const userFound = await this.userService.fetchUserByEmail(email);
+    const userFound = await this.userService.fetchUser({ email: email });
     const checkUserExist = userFound != null ? true : false;
 
     if (!checkUserExist) {
@@ -126,26 +130,40 @@ export class AuthController {
       });
     }
 
-    const currentHash = pbkdf2Sync(
+    const saltOfUserFound = userFound.salt;
+    const rewrintingHash = pbkdf2Sync(
       password,
-      userFound.salt,
+      saltOfUserFound,
       1000,
       64,
       'sha512',
     ).toString('hex');
-    const checkValidPassword = userFound.password === currentHash;
 
-    if (!checkValidPassword) {
+    // console.log({
+    //   userFound,
+    //   password,
+    //   hashed: userFound.password,
+    //   saltOfUserFound,
+    //   rewrintingHash,
+    // });
+
+    const checkPasswordIsValide = rewrintingHash === userFound.password;
+    console.log({ checkPasswordIsValide });
+
+    if (!checkPasswordIsValide) {
       return response.status(HttpStatus.UNAUTHORIZED).json({
         title: "Echec de l'authentification",
         message:
           'Vous devez revoir votre authentification, un problème ou plusieurs problèmes ont été rencontré quelque part.',
       });
-    } else {
-      return response.status(HttpStatus.OK).json({
-        title: 'Authentification réussi.',
-        message: 'La connexion a réussi avec succès.',
-      });
     }
+
+    const token = await this.autheService.generateToken(email);
+
+    return response.status(HttpStatus.OK).json({
+      title: 'Authentification réussi.',
+      message: 'La connexion a réussi avec succès.',
+      token,
+    });
   }
 }

@@ -15,6 +15,22 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  async generateToken(email) {
+    const userFound = await this.userService.fetchDataForPayload(email);
+    console.log(userFound);
+
+    if (userFound) {
+      // création du payload
+      const payload = { sub: userFound._id, role: userFound.role };
+
+      return this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+      });
+    }
+
+    return null;
+  }
+
   async createUser(
     email: string,
     password: string,
@@ -40,22 +56,53 @@ export class AuthService {
       throw new NotAcceptableException("L'utilisateur n'existe pas!");
     }
 
-    const currentHash = pbkdf2Sync(
-      password,
-      user.salt,
+    if (await this.verifyPassword(password, user.salt, user.password)) {
+      return user;
+    } else {
+      return null;
+    }
+
+    // const currentHash = pbkdf2Sync(
+    //   password,
+    //   user.salt,
+    //   1000,
+    //   64,
+    //   'sha512',
+    // ).toString('hex');
+    // console.log(currentHash);
+
+    // const checkValidPassword: boolean = user.password === currentHash;
+
+    // console.log({
+    //   validateUserLogin: { user },
+    // });
+
+    // Si l'utilisateur existe et que le password existe alors on retourne le user sinon null
+    // return user && checkValidPassword ? user : null;
+  }
+
+  async verifyPassword(
+    currentPassword,
+    salt,
+    hashedPassword,
+  ): Promise<boolean> {
+    console.log({
+      currentPassword,
+      salt,
+      hashedPassword,
+    });
+
+    const checkHash = pbkdf2Sync(
+      currentPassword,
+      salt,
       1000,
       64,
       'sha512',
     ).toString('hex');
 
-    const checkValidPassword: boolean = user.password === currentHash;
+    console.log({ test: checkHash === hashedPassword });
 
-    console.log({
-      validateUserLogin: { user },
-    });
-
-    // Si l'utilisateur existe et que le password existe alors on retourne le user sinon null
-    return user && checkValidPassword ? user : null;
+    return checkHash === hashedPassword;
   }
 
   async validateUserPayload(payload) {
@@ -63,20 +110,6 @@ export class AuthService {
       return null;
     } else {
       return true;
-    }
-  }
-
-  async generateToken(email) {
-    const userFound = await this.userService.fetchDataForPayload(email);
-    console.log(userFound);
-
-    if (userFound) {
-      // création du payload
-      const payload = { sub: userFound.id };
-
-      return {
-        token: this.jwtService.sign(payload),
-      };
     }
   }
 }

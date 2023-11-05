@@ -2,7 +2,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { UserModule } from 'src/user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
@@ -11,7 +10,6 @@ import { UserSchema } from 'src/user/user.model';
 
 @Module({
   imports: [
-    UserModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
@@ -26,6 +24,6 @@ import { UserSchema } from 'src/user/user.model';
   ],
   controllers: [AuthController],
   providers: [AuthService, UserService, JwtStrategy],
-  exports: [AuthModule, PassportModule, JwtModule, JwtStrategy, AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}

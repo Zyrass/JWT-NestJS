@@ -14,6 +14,7 @@ import { UserModule } from './user/user.module';
       isGlobal: true,
     }),
     MongooseModule.forRootAsync({
+      inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         auth: {
           username: configService.get('MONGODB_USERNAME'),
@@ -23,7 +24,6 @@ import { UserModule } from './user/user.module';
           'MONGODB_CLUSTER_NAME',
         )}.xdeetkl.mongodb.net/${configService.get('MONGODB_DATABASE_NAME')}`,
       }),
-      inject: [ConfigService],
     }),
     AuthModule,
     UserModule,

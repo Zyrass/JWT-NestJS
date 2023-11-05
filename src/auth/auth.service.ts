@@ -12,22 +12,20 @@ export class AuthService {
   constructor(
     @InjectModel('user') private readonly userModel: Model<UserDocument>,
     private readonly userService: UserService,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async generateToken(email) {
     const userFound = await this.userService.fetchDataForPayload(email);
-    console.log(userFound);
+    // console.log(userFound);
 
+    // L'utilisateur existe, création du payload
     if (userFound) {
-      // création du payload
       const payload = { sub: userFound._id, role: userFound.role };
-
-      return this.jwtService.sign(payload, {
-        secret: process.env.JWT_SECRET,
-      });
+      return this.jwtService.sign(payload, { secret: process.env.JWT_SECRET });
     }
 
+    // L'utilisateur n'existe pas
     return null;
   }
 
